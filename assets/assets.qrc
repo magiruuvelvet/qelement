@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>element.ico</file>
+        <file>element.png</file>
+        <file>element-notification.png</file>
+        <file>element-networkerror.png</file>
+    </qresource>
+</RCC>
