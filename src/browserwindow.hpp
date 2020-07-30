@@ -30,6 +30,7 @@ public:
 private:
     void acceptFullScreen(QWebEngineFullScreenRequest);
     void acceptFeaturePermission(const QUrl &origin, QWebEnginePage::Feature feature);
+    void notificationMessageClicked();
 
 protected:
     void showEvent(QShowEvent *event);

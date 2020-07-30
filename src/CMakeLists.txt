@@ -6,6 +6,15 @@ message(STATUS "Configuring ${CURRENT_TARGET}...")
 
 find_package(Threads REQUIRED)
 
+set(ENABLE_LIBNOTIFY OFF CACHE BOOL "Use libnotify for notifications instead of Qt.")
+pkg_check_modules(LIBNOTIFY "libnotify")
+if (LIBNOTIFY_FOUND AND ENABLE_LIBNOTIFY)
+    message(STATUS "Enabling libnotify support...")
+    set(CONFIG_STATUS_NOTIFICATION_SYSTEM "libnotify" CACHE INTERNAL "")
+else()
+    set(CONFIG_STATUS_NOTIFICATION_SYSTEM "Qt" CACHE INTERNAL "")
+endif()
+
 # Qt
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
@@ -51,5 +60,12 @@ target_link_libraries(${CURRENT_TARGET}
         Qt5::WebEngineWidgets
         Threads::Threads
 )
+
+# libnotify
+if (LIBNOTIFY_FOUND AND ENABLE_LIBNOTIFY)
+    target_compile_definitions(${CURRENT_TARGET} PRIVATE -DLIBNOTIFY_ENABLED)
+    target_include_directories(${CURRENT_TARGET} PRIVATE SYSTEM "${LIBNOTIFY_INCLUDE_DIRS}")
+    target_link_libraries(${CURRENT_TARGET} PRIVATE "${LIBNOTIFY_LDFLAGS}")
+endif()
 
 message(STATUS "Configured ${CURRENT_TARGET}.")

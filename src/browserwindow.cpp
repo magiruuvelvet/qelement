@@ -1,5 +1,6 @@
 #include "browserwindow.hpp"
 #include "paths.hpp"
+#include "desktopnotification.hpp"
 
 #include <QShortcut>
 #include <QShowEvent>
@@ -52,12 +53,22 @@ BrowserWindow::BrowserWindow(QWidget *parent)
                 // indicate that there are notifications
                 this->setNotificationIcon(NotificationIcon::Notification);
 
-                // FIXME: generally works, but use libnotify on supported operating systems instead
+                // send notification using Qt when libnotify is not enabled
+#ifndef LIBNOTIFY_ENABLED
                 this->trayIcon->showMessage(
                     notification->title(),
                     notification->message(),
                     QPixmap::fromImage(notification->icon()), 3000);
+#endif
             }
+
+            // send notification using libnotify when enabled
+#ifdef LIBNOTIFY_ENABLED
+            DesktopNotification::send(
+                notification->title(),
+                notification->message(),
+                notification->icon());
+#endif
 
             notification->show();
         }
@@ -101,14 +112,7 @@ BrowserWindow::BrowserWindow(QWidget *parent)
         });
 
         connect(trayIcon.get(), &QSystemTrayIcon::activated, this, &BrowserWindow::trayTriggerCallback);
-        connect(trayIcon.get(), &QSystemTrayIcon::messageClicked, this, [&]{
-            this->show();
-            if (this->_notification)
-            {
-                this->_notification->click();
-                this->_notification = nullptr;
-            }
-        });
+        connect(trayIcon.get(), &QSystemTrayIcon::messageClicked, this, &BrowserWindow::notificationMessageClicked);
 
         this->trayIcon->setContextMenu(trayMenu.get());
         this->trayIcon->show();
@@ -163,6 +167,17 @@ void BrowserWindow::acceptFullScreen(QWebEngineFullScreenRequest req)
 void BrowserWindow::acceptFeaturePermission(const QUrl &origin, QWebEnginePage::Feature feature)
 {
     page->setFeaturePermission(origin, feature, QWebEnginePage::PermissionGrantedByUser);
+}
+
+void BrowserWindow::notificationMessageClicked()
+{
+    this->show();
+
+    if (this->_notification)
+    {
+        this->_notification->click();
+        this->_notification = nullptr;
+    }
 }
 
 void BrowserWindow::showEvent(QShowEvent *event)
