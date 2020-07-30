@@ -230,15 +230,22 @@ void BrowserWindow::updateShowHideMenuAction()
 
 void BrowserWindow::initializeScripts()
 {
+    // notifications are reset to disabled on every app restart and reload for some unknown reason
     QWebEngineScript notificationFixer;
     notificationFixer.setName("notification-fixer");
     notificationFixer.setWorldId(QWebEngineScript::MainWorld);
     notificationFixer.setInjectionPoint(QWebEngineScript::Deferred);
     notificationFixer.setSourceCode(R"(
         console.info("fixing notifications...");
-        localStorage.setItem("notifications_enabled", true);
-        localStorage.setItem("audio_notifications_enabled", true);
-        localStorage.setItem("notifications_body_enabled", true);
+        let notification_fixer = () => {
+            try { mxSettingsStore.setValue("notificationsEnabled", null, "device", true); } catch (e){}
+            try { mxSettingsStore.setValue("notificationBodyEnabled", null, "device", true); } catch (e){}
+            try { mxSettingsStore.setValue("audioNotificationsEnabled", null, "device", true); } catch (e){}
+        };
+        // run snippet 3 times to make absolutely sure, sometimes the setting doesn't apply
+        setTimeout(notification_fixer, 2000);
+        setTimeout(notification_fixer, 3000);
+        setTimeout(notification_fixer, 4000);
     )");
 
     auto scripts = profile->scripts();
