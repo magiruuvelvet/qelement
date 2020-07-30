@@ -15,10 +15,16 @@ which uses the Qt Web Engine instead of Electron.
  - Clicking on the desktop notification may not work depending on your desktop environment.
    Investigation is ongoing, could be Qt bug or not.
 
+## Limitations
+
+ - Native extensions made for the Electron version can't be used in QElement and never will be.
+   When using QElement only the JS/WASM OLM implementation for E2E is available.
+
 ## TODO
 
  - Indicate network errors in the system tray icon just like the Electron app.
  - Probably show a counter in the notification tray icon, currently just a red circle.
+ - Configure web app location and listening port for embedded web server.
 
 ## Building
 
@@ -27,3 +33,9 @@ mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build .
 ```
+
+## How to use?
+
+QElement requires the built web app found at the [riot-web](https://github.com/vector-im/riot-web/releases) repository.
+Currently the location is hardcoded to `/opt/Element/resources/webapp`. The application starts an embedded web server
+to serve the application under `localhost:63535`.
