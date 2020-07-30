@@ -12,7 +12,11 @@ const QString &webengine_profile_path(bool real)
     static QString empty;
     static const auto base_location = QString("%1/%2").arg(
         QStandardPaths::writableLocation(QStandardPaths::AppDataLocation),
+#ifdef DEBUG_BUILD
+        "Profile-Debug");
+#else
         "Profile");
+#endif
     static auto init = ([&]{
         QDir root = QDir(base_location);
         return root.mkpath(".");

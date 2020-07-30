@@ -60,10 +60,16 @@ int main(int argc, char **argv)
     std::signal(SIGTERM, sig_handler);
 #endif
 
+#ifdef DEBUG_BUILD
+    QString instance_name = "debug";
+#else
+    QString instance_name = "default";
+#endif
+
     // check if application is already running and acquire a single instance lock
     // qtwebengine corrupts its own storage on multiple instances of the process
     // also the internal webserver can't bind on the same port multiple times
-    if (is_already_running())
+    if (is_already_running(instance_name))
     {
         return 0;
     }
