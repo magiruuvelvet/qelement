@@ -62,6 +62,7 @@ BrowserWindow::BrowserWindow(QWidget *parent)
             notification->show();
         }
     });
+    this->initializeScripts();
 
     // add application to user agent
     auto useragent = profile->httpUserAgent();
@@ -73,6 +74,7 @@ BrowserWindow::BrowserWindow(QWidget *parent)
     settings->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
     settings->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
     settings->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard, true);
+    settings->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     settings->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
     settings->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
     settings->setAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, true);
@@ -223,5 +225,26 @@ void BrowserWindow::updateShowHideMenuAction()
         {
             action->setText(tr("Show"));
         }
+    }
+}
+
+void BrowserWindow::initializeScripts()
+{
+    QWebEngineScript notificationFixer;
+    notificationFixer.setName("notification-fixer");
+    notificationFixer.setWorldId(QWebEngineScript::MainWorld);
+    notificationFixer.setInjectionPoint(QWebEngineScript::Deferred);
+    notificationFixer.setSourceCode(R"(
+        console.info("fixing notifications...");
+        localStorage.setItem("notifications_enabled", true);
+        localStorage.setItem("audio_notifications_enabled", true);
+        localStorage.setItem("notifications_body_enabled", true);
+    )");
+
+    auto scripts = profile->scripts();
+    if (!scripts->contains(notificationFixer))
+    {
+        qDebug() << "install notification fixer script...";
+        scripts->insert(notificationFixer);
     }
 }

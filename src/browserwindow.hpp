@@ -50,6 +50,7 @@ private:
 
     void trayTriggerCallback(QSystemTrayIcon::ActivationReason reason);
     void updateShowHideMenuAction();
+    void initializeScripts();
 
     QWebEngineNotification *_notification = nullptr;
 };
