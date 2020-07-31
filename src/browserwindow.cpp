@@ -172,6 +172,7 @@ void BrowserWindow::acceptFeaturePermission(const QUrl &origin, QWebEnginePage::
 void BrowserWindow::notificationMessageClicked()
 {
     this->show();
+    this->activateWindow();
 
     if (this->_notification)
     {
