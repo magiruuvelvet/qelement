@@ -64,7 +64,7 @@ target_link_libraries(${CURRENT_TARGET}
 # libnotify
 if (LIBNOTIFY_FOUND AND ENABLE_LIBNOTIFY)
     target_compile_definitions(${CURRENT_TARGET} PRIVATE -DLIBNOTIFY_ENABLED)
-    target_include_directories(${CURRENT_TARGET} PRIVATE SYSTEM "${LIBNOTIFY_INCLUDE_DIRS}")
+    target_include_directories(${CURRENT_TARGET} SYSTEM PRIVATE "${LIBNOTIFY_INCLUDE_DIRS}")
     target_link_libraries(${CURRENT_TARGET} PRIVATE "${LIBNOTIFY_LDFLAGS}")
 endif()
 
