@@ -6,12 +6,10 @@
 
 #include <vector>
 
-#include <httplib.h>
-
 #include "paths.hpp"
 #include "browserwindow.hpp"
+#include "elementurlscheme.hpp"
 
-httplib::Server server;
 std::unique_ptr<QLockFile> instance_lock;
 
 #ifdef Q_OS_UNIX
@@ -80,6 +78,13 @@ int main(int argc, char **argv)
     args.push_back(nullptr);
     int newArgc = int(args.size()) - 1;
 
+    // setup element:// url scheme
+    QWebEngineUrlScheme scheme(ElementUrlScheme::schemeName());
+    scheme.setSyntax(QWebEngineUrlScheme::Syntax::Host);
+    scheme.setDefaultPort(QWebEngineUrlScheme::PortUnspecified);
+    scheme.setFlags(QWebEngineUrlScheme::SecureScheme);
+    QWebEngineUrlScheme::registerScheme(scheme);
+
     // initialize application with modified arguments
     QtWebEngine::initialize();
     QApplication a(newArgc, args.data());
@@ -95,19 +100,9 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    // FIXME: try to use a custom url scheme handler just like the official Electron app
-    //        instead of starting a web server
-
-    // start the static file server to provide the element webapp via http
-    QtConcurrent::run([]{
-        server.set_mount_point("/", "/opt/Element/resources/webapp");
-        server.listen("localhost", 63535);
-    });
-
-    // stop server when application quits
-    QObject::connect(&a, &QApplication::aboutToQuit, &a, []{
-        server.stop();
-    });
+    // register element:// url scheme
+    auto elementUrlHandler = std::make_unique<ElementUrlScheme>("/opt/Element/resources/webapp");
+    QWebEngineProfile::defaultProfile()->installUrlSchemeHandler(ElementUrlScheme::schemeName(), elementUrlHandler.get());
 
     // load the browser window
     BrowserWindow webview;

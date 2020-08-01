@@ -48,8 +48,6 @@ target_compile_definitions(${CURRENT_TARGET} PRIVATE -DQT_DISABLE_DEPRECATED_BEF
 # disable Qt foreach macro
 target_compile_definitions(${CURRENT_TARGET} PRIVATE -DQT_NO_FOREACH)
 
-target_include_directories(${CURRENT_TARGET} PRIVATE "${PROJECT_SOURCE_DIR}/libs/cpp-httplib")
-
 target_link_libraries(${CURRENT_TARGET}
     PRIVATE
         Qt5::Core

@@ -94,7 +94,7 @@ BrowserWindow::BrowserWindow(QWidget *parent)
     connect(page, &QWebEnginePage::fullScreenRequested, this, &BrowserWindow::acceptFullScreen);
     connect(page, &QWebEnginePage::featurePermissionRequested, this, &BrowserWindow::acceptFeaturePermission);
 
-    page->setUrl(QUrl("http://localhost:63535/index.html"));
+    page->setUrl(QUrl("element://localhost/"));
 
     // create system tray icon with notification support
     if (QSystemTrayIcon::isSystemTrayAvailable())

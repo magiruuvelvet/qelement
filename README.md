@@ -24,7 +24,7 @@ which uses the Qt Web Engine instead of Electron.
 
  - Indicate network errors in the system tray icon just like the Electron app.
  - Probably show a counter in the notification tray icon, currently just a red circle.
- - Configure web app location and listening port for embedded web server.
+ - Configure web app location.
 
 ## Building
 
@@ -37,5 +37,4 @@ cmake --build .
 ## How to use?
 
 QElement requires the built web app found at the [riot-web](https://github.com/vector-im/riot-web/releases) repository.
-Currently the location is hardcoded to `/opt/Element/resources/webapp`. The application starts an embedded web server
-to serve the application under `localhost:63535`.
+Currently the location is hardcoded to `/opt/Element/resources/webapp`.
