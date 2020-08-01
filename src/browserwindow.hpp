@@ -39,6 +39,7 @@ protected:
 private:
     std::unique_ptr<QHBoxLayout> _layout;
     std::unique_ptr<WebEngineView> _webview;
+    QByteArray _geometry;
 
     std::unique_ptr<QSystemTrayIcon> trayIcon;
     std::unique_ptr<QMenu> trayMenu;

@@ -191,6 +191,7 @@ void BrowserWindow::showEvent(QShowEvent *event)
         this->updateShowHideMenuAction();
     }
 
+    this->restoreGeometry(this->_geometry);
     event->accept();
 }
 
@@ -199,6 +200,7 @@ void BrowserWindow::closeEvent(QCloseEvent *event)
     if (this->trayIcon)
     {
         // if tray icon is present, close the window instead of exiting the application
+        this->_geometry = this->saveGeometry();
         this->hide();
         this->updateShowHideMenuAction();
     }
@@ -215,10 +217,12 @@ void BrowserWindow::trayTriggerCallback(QSystemTrayIcon::ActivationReason reason
     {
         if (this->isVisible())
         {
+            this->_geometry = this->saveGeometry();
             this->hide();
         }
         else
         {
+            this->restoreGeometry(this->_geometry);
             this->show();
             this->activateWindow();
         }
