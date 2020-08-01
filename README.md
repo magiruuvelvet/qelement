@@ -37,4 +37,5 @@ cmake --build .
 ## How to use?
 
 QElement requires the built web app found at the [riot-web](https://github.com/vector-im/riot-web/releases) repository.
-Currently the location is hardcoded to `/opt/Element/resources/webapp`.
+Currently the location is hardcoded to `/opt/Element/resources/webapp`. The extracted Electron `webapp.asar` works too.
+Make sure a `config.json` file is available in the web app root.
