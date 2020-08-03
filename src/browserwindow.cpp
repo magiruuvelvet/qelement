@@ -48,6 +48,8 @@ BrowserWindow::BrowserWindow(QWidget *parent)
         // only trigger notifications when application is not visible
         if (!this->isVisible())
         {
+            this->_hasNotification = true;
+
             if (this->trayIcon)
             {
                 // indicate that there are notifications
@@ -93,6 +95,7 @@ BrowserWindow::BrowserWindow(QWidget *parent)
 
     connect(page, &QWebEnginePage::fullScreenRequested, this, &BrowserWindow::acceptFullScreen);
     connect(page, &QWebEnginePage::featurePermissionRequested, this, &BrowserWindow::acceptFeaturePermission);
+    connect(page, &QWebEnginePage::loadFinished, this, &BrowserWindow::setupNetworkMonitor);
 
     page->setUrl(QUrl("element://localhost/"));
 
@@ -118,6 +121,21 @@ BrowserWindow::BrowserWindow(QWidget *parent)
         this->trayIcon->show();
     }
 
+    // setup network monitor
+    this->networkMonitor = std::make_unique<QNetworkAccessManager>(this);
+    connect(this->networkMonitor.get(), &QNetworkAccessManager::finished, this, &BrowserWindow::updateNetworkState);
+    this->networkMonitorTimer = std::make_unique<QTimer>(this);
+    connect(this->networkMonitorTimer.get(), &QTimer::timeout, this, [&]{
+        if (!this->homeserver.isEmpty())
+        {
+            this->networkMonitor->get(QNetworkRequest(QUrl(this->homeserver)));
+        }
+        this->networkMonitorTimer->setInterval(60000);
+        this->networkMonitorTimer->start();
+    });
+    this->networkMonitorTimer->setInterval(60000);
+    this->networkMonitorTimer->start();
+
     // setup shortcuts
     connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this),
             &QShortcut::activated, this, []{
@@ -135,10 +153,19 @@ BrowserWindow::BrowserWindow(QWidget *parent)
 
 BrowserWindow::~BrowserWindow()
 {
+    this->networkMonitorTimer->stop();
 }
 
 void BrowserWindow::setNotificationIcon(NotificationIcon icon)
 {
+    // don't call QSystemTrayIcon::setIcon() when the icon didn't change
+    if (this->_notificationIcon == icon)
+    {
+        return;
+    }
+
+    this->_notificationIcon = icon;
+
     if (this->trayIcon)
     {
         switch (icon)
@@ -156,6 +183,16 @@ void BrowserWindow::setNotificationIcon(NotificationIcon icon)
                 break;
         }
     }
+}
+
+BrowserWindow::NotificationIcon BrowserWindow::notificationIcon() const
+{
+    return this->_notificationIcon;
+}
+
+bool BrowserWindow::hasNotification() const
+{
+    return this->_hasNotification;
 }
 
 void BrowserWindow::acceptFullScreen(QWebEngineFullScreenRequest req)
@@ -183,6 +220,8 @@ void BrowserWindow::notificationMessageClicked()
 
 void BrowserWindow::showEvent(QShowEvent *event)
 {
+    this->_hasNotification = false;
+
     if (this->trayIcon)
     {
         // remove notification indicator from tray icon
@@ -250,6 +289,14 @@ void BrowserWindow::updateShowHideMenuAction()
 
 void BrowserWindow::initializeScripts()
 {
+    auto scripts = profile->scripts();
+
+    QWebEngineScript homeserverUrlGetter;
+    homeserverUrlGetter.setName("homeserver-url-getter");
+    homeserverUrlGetter.setWorldId(QWebEngineScript::MainWorld);
+    homeserverUrlGetter.setInjectionPoint(QWebEngineScript::Deferred);
+    homeserverUrlGetter.setSourceCode(R"(window.mx_hs_url = localStorage.getItem("mx_hs_url");)");
+
     // notifications are reset to disabled on every app restart and reload for some unknown reason
     QWebEngineScript notificationFixer;
     notificationFixer.setName("notification-fixer");
@@ -268,10 +315,65 @@ void BrowserWindow::initializeScripts()
         setTimeout(notification_fixer, 4000);
     )");
 
-    auto scripts = profile->scripts();
+
+    if (!scripts->contains(homeserverUrlGetter))
+    {
+        qDebug() << "install homeserver url getter script...";
+        scripts->insert(homeserverUrlGetter);
+    }
+
     if (!scripts->contains(notificationFixer))
     {
         qDebug() << "install notification fixer script...";
         scripts->insert(notificationFixer);
+    }
+}
+
+void BrowserWindow::setupNetworkMonitor(bool ok)
+{
+    if (ok)
+    {
+        QTimer::singleShot(10000, this, [&]{
+            page->runJavaScript("window.mx_hs_url;", [&](const QVariant &result) {
+                if (result.canConvert(QVariant::String))
+                {
+                    this->homeserver = result.toString();
+                    qDebug() << "homeserver url:" << this->homeserver;
+                    if (!this->homeserver.isEmpty())
+                    {
+                        this->networkMonitor->get(QNetworkRequest(QUrl(this->homeserver)));
+                    }
+                }
+                else
+                {
+                    this->homeserver.clear();
+                }
+            });
+        });
+    }
+    else
+    {
+        this->homeserver.clear();
+    }
+}
+
+void BrowserWindow::updateNetworkState(QNetworkReply *reply)
+{
+    qDebug() << "network monitor:" << reply->url() << reply->error();
+
+    if (reply->error() == QNetworkReply::NoError)
+    {
+        if (this->_hasNotification)
+        {
+            this->setNotificationIcon(NotificationIcon::Notification);
+        }
+        else
+        {
+            this->setNotificationIcon(NotificationIcon::Normal);
+        }
+    }
+    else
+    {
+        this->setNotificationIcon(NotificationIcon::NetworkError);
     }
 }

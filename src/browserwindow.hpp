@@ -5,6 +5,7 @@
 #include <QtWebEngine>
 #include <QtWebEngineWidgets>
 #include <QSystemTrayIcon>
+#include <QNetworkAccessManager>
 
 #include "webengineview.hpp"
 
@@ -20,12 +21,15 @@ public:
 
     enum class NotificationIcon
     {
-        Normal,
-        Notification,
-        NetworkError,
+        NoIcon          = -1,
+        Normal          = 0,
+        Notification    = 1,
+        NetworkError    = 2,
     };
 
     void setNotificationIcon(NotificationIcon icon);
+    NotificationIcon notificationIcon() const;
+    bool hasNotification() const;
 
 private:
     void acceptFullScreen(QWebEngineFullScreenRequest);
@@ -53,6 +57,14 @@ private:
     void trayTriggerCallback(QSystemTrayIcon::ActivationReason reason);
     void updateShowHideMenuAction();
     void initializeScripts();
+    void setupNetworkMonitor(bool ok);
+    void updateNetworkState(QNetworkReply *reply);
 
+    NotificationIcon _notificationIcon = NotificationIcon::NoIcon;
+    bool _hasNotification = false;
     QWebEngineNotification *_notification = nullptr;
+
+    QString homeserver;
+    std::unique_ptr<QNetworkAccessManager> networkMonitor;
+    std::unique_ptr<QTimer> networkMonitorTimer;
 };

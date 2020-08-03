@@ -19,6 +19,7 @@ endif()
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Network REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 find_package(Qt5WebEngine REQUIRED)
 find_package(Qt5WebEngineWidgets REQUIRED)
@@ -53,6 +54,7 @@ target_link_libraries(${CURRENT_TARGET}
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
+        Qt5::Network
         Qt5::Concurrent
         Qt5::WebEngine
         Qt5::WebEngineWidgets
