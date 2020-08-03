@@ -1,14 +1,19 @@
 #include <QApplication>
+#include <QCommandLineParser>
 #include <QtWebEngine>
 #include <QtConcurrentRun>
 #include <QMessageBox>
 #include <QLockFile>
 
 #include <vector>
+#include <string_view>
 
 #include "paths.hpp"
 #include "browserwindow.hpp"
 #include "elementurlscheme.hpp"
+
+constexpr const std::string_view appname{"QElement"};
+constexpr const std::string_view appversion{"1.1"};
 
 std::unique_ptr<QLockFile> instance_lock;
 
@@ -74,6 +79,34 @@ int main(int argc, char **argv)
     std::signal(SIGTERM, sig_handler);
 #endif
 
+    QStringList arguments;
+    for (auto i = 0; i < argc; ++i)
+    {
+        arguments << QString::fromUtf8(argv[i]);
+    }
+
+    QCommandLineParser parser;
+    QList<QCommandLineOption> options{
+        QCommandLineOption("help", QObject::tr("Show this help")),
+        QCommandLineOption("minimized", QObject::tr("Start minimized to tray")),
+    };
+    parser.addOptions(options);
+    parser.process(arguments);
+
+    if (parser.isSet("help"))
+    {
+        std::printf("%s %s\n", appname.data(), appversion.data());
+
+        for (auto&& option : options)
+        {
+            std::printf("   --%s \t\t\t%s\n",
+                option.names().at(0).toUtf8().constData(),
+                option.description().toUtf8().constData());
+        }
+
+        return 0;
+    }
+
 #ifdef DEBUG_BUILD
     QString instance_name = "debug";
 #else
@@ -104,8 +137,8 @@ int main(int argc, char **argv)
     // initialize application with modified arguments
     QtWebEngine::initialize();
     QApplication a(newArgc, args.data());
-    a.setApplicationName("QElement");
-    a.setApplicationVersion("1.0");
+    a.setApplicationName(appname.data());
+    a.setApplicationVersion(appversion.data());
     a.setWindowIcon(QIcon(":/element.ico"));
 
     // create and validate data path
@@ -124,7 +157,10 @@ int main(int argc, char **argv)
     BrowserWindow webview;
 
     // show browser window
-    webview.show();
+    if (!parser.isSet("minimized"))
+    {
+        webview.show();
+    }
 
     // enter qt event loop
     const auto res = a.exec();

@@ -119,6 +119,8 @@ BrowserWindow::BrowserWindow(QWidget *parent)
 
         this->trayIcon->setContextMenu(trayMenu.get());
         this->trayIcon->show();
+
+        this->updateShowHideMenuAction();
     }
 
     // setup network monitor
