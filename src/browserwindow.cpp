@@ -6,7 +6,7 @@
 #include <QShowEvent>
 #include <QCloseEvent>
 
-BrowserWindow::BrowserWindow(QWidget *parent)
+BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
     : QWidget(parent)
 {
     this->setMinimumSize(250, 250);
@@ -39,7 +39,7 @@ BrowserWindow::BrowserWindow(QWidget *parent)
     webview->setContextMenuPolicy(Qt::NoContextMenu);
 
     profile->setCachePath(paths::webengine_profile_path());
-    profile->setPersistentStoragePath(QString("%1/%2").arg(paths::webengine_profile_path(), "Storage"));
+    profile->setPersistentStoragePath(QString("%1/%2").arg(paths::webengine_profile_path(profileName), "Storage"));
     profile->setPersistentCookiesPolicy(QWebEngineProfile::AllowPersistentCookies);
     profile->setNotificationPresenter([&](std::unique_ptr<QWebEngineNotification> notification){
         qDebug() << "notification received:" << notification->title() << notification->message();

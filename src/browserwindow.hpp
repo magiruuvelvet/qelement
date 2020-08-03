@@ -16,7 +16,7 @@ class BrowserWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit BrowserWindow(QWidget *parent = nullptr);
+    explicit BrowserWindow(const QString &profileName, QWidget *parent = nullptr);
     ~BrowserWindow();
 
     enum class NotificationIcon

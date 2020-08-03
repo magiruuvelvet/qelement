@@ -89,6 +89,13 @@ int main(int argc, char **argv)
     QList<QCommandLineOption> options{
         QCommandLineOption("help", QObject::tr("Show this help")),
         QCommandLineOption("minimized", QObject::tr("Start minimized to tray")),
+        QCommandLineOption("profile", "Profile to use", "profile",
+            #ifdef DEBUG_BUILD
+                "debug"
+            #else
+                "default"
+            #endif
+            ),
     };
     parser.addOptions(options);
     parser.process(arguments);
@@ -99,19 +106,34 @@ int main(int argc, char **argv)
 
         for (auto&& option : options)
         {
-            std::printf("   --%s \t\t\t%s\n",
+            std::printf("   --%s%s %s\t\t%s\n",
                 option.names().at(0).toUtf8().constData(),
+                ([&]{
+                    if (!option.valueName().isEmpty())
+                    {
+                        return std::string{"=["} + option.valueName().toStdString() + std::string{"]"};
+                    }
+                    return std::string{};
+                })().c_str(),
+                ([&]{
+                    if (option.valueName().isEmpty())
+                    {
+                        return "\t";
+                    }
+                    else
+                    {
+                        return "";
+                    }
+                })(),
                 option.description().toUtf8().constData());
         }
 
         return 0;
     }
 
-#ifdef DEBUG_BUILD
-    QString instance_name = "debug";
-#else
-    QString instance_name = "default";
-#endif
+    // get profile to use
+    QString instance_name = parser.value("profile");
+    std::printf("using profile: %s\n", instance_name.toUtf8().constData());
 
     // check if application is already running and acquire a single instance lock
     // qtwebengine corrupts its own storage on multiple instances of the process
@@ -142,10 +164,10 @@ int main(int argc, char **argv)
     a.setWindowIcon(QIcon(":/element.ico"));
 
     // create and validate data path
-    if (paths::webengine_profile_path().isEmpty())
+    if (paths::webengine_profile_path(instance_name).isEmpty())
     {
         show_error(QObject::tr("Unable to access directory: %1").arg(
-            paths::webengine_profile_path(false)));
+            paths::webengine_profile_path(instance_name, false)));
         return 1;
     }
 
@@ -154,7 +176,7 @@ int main(int argc, char **argv)
     QWebEngineProfile::defaultProfile()->installUrlSchemeHandler(ElementUrlScheme::schemeName(), elementUrlHandler.get());
 
     // load the browser window
-    BrowserWindow webview;
+    BrowserWindow webview(instance_name);
 
     // show browser window
     if (!parser.isSet("minimized"))

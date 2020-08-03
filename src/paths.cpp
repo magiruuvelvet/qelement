@@ -6,16 +6,16 @@
 namespace paths
 {
 
-const QString &webengine_profile_path(bool real)
+const QString &webengine_profile_path(const QString &profile, bool real)
 {
     // first-time initialization
     static QString empty;
     static const auto base_location = QString("%1/%2").arg(
         QStandardPaths::writableLocation(QStandardPaths::AppDataLocation),
 #ifdef DEBUG_BUILD
-        "Profile-Debug");
+        "Profile-Debug-" + profile);
 #else
-        "Profile");
+        "Profile-" + profile);
 #endif
     static auto init = ([&]{
         QDir root = QDir(base_location);
