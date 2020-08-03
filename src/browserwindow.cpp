@@ -203,7 +203,19 @@ void BrowserWindow::acceptFullScreen(QWebEngineFullScreenRequest req)
 
 void BrowserWindow::acceptFeaturePermission(const QUrl &origin, QWebEnginePage::Feature feature)
 {
-    page->setFeaturePermission(origin, feature, QWebEnginePage::PermissionGrantedByUser);
+    qDebug() << "acceptFeaturePermission:" << origin << feature;
+
+    // allow all permissions for element:// urls, reject all permissions for other urls
+    if (origin.scheme() == "element")
+    {
+        qDebug() << "allow permission:" << feature;
+        page->setFeaturePermission(origin, feature, QWebEnginePage::PermissionGrantedByUser);
+    }
+    else
+    {
+        qDebug() << "blocked permission request for:" << origin << feature;
+        page->setFeaturePermission(origin, feature, QWebEnginePage::PermissionDeniedByUser);
+    }
 }
 
 void BrowserWindow::notificationMessageClicked()
