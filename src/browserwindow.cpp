@@ -124,6 +124,7 @@ BrowserWindow::BrowserWindow(QWidget *parent)
     }
 
     // setup network monitor
+    constexpr const int interval = 10 * 1000; // 10 seconds
     this->networkMonitor = std::make_unique<QNetworkAccessManager>(this);
     connect(this->networkMonitor.get(), &QNetworkAccessManager::finished, this, &BrowserWindow::updateNetworkState);
     this->networkMonitorTimer = std::make_unique<QTimer>(this);
@@ -132,10 +133,10 @@ BrowserWindow::BrowserWindow(QWidget *parent)
         {
             this->networkMonitor->get(QNetworkRequest(QUrl(this->homeserver)));
         }
-        this->networkMonitorTimer->setInterval(60000);
+        this->networkMonitorTimer->setInterval(interval);
         this->networkMonitorTimer->start();
     });
-    this->networkMonitorTimer->setInterval(60000);
+    this->networkMonitorTimer->setInterval(interval);
     this->networkMonitorTimer->start();
 
     // setup shortcuts
@@ -373,8 +374,6 @@ void BrowserWindow::setupNetworkMonitor(bool ok)
 
 void BrowserWindow::updateNetworkState(QNetworkReply *reply)
 {
-    qDebug() << "network monitor:" << reply->url() << reply->error();
-
     if (reply->error() == QNetworkReply::NoError)
     {
         if (this->_hasNotification)
@@ -388,6 +387,7 @@ void BrowserWindow::updateNetworkState(QNetworkReply *reply)
     }
     else
     {
+        qDebug() << "network monitor:" << reply->url() << reply->error();
         this->setNotificationIcon(NotificationIcon::NetworkError);
     }
 }
