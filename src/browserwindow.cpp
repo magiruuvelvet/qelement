@@ -240,7 +240,10 @@ void BrowserWindow::showEvent(QShowEvent *event)
     if (this->trayIcon)
     {
         // remove notification indicator from tray icon
-        this->setNotificationIcon(NotificationIcon::Normal);
+        if (this->_notificationIcon != NotificationIcon::NetworkError)
+        {
+            this->setNotificationIcon(NotificationIcon::Normal);
+        }
 
         this->updateShowHideMenuAction();
     }
