@@ -29,6 +29,20 @@ void sig_handler(int signal)
 }
 #endif
 
+// force QDebug to print to console even when no tty is attached to avoid
+// cluttering the systemd journal on systemd-based distros
+void qdebug_force_console(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    if (type == QtDebugMsg)
+    {
+        std::fprintf(stderr, "%s\n", msg.toStdString().c_str());
+    }
+    else
+    {
+        std::fprintf(stdout, "%s\n", msg.toStdString().c_str());
+    }
+}
+
 void show_error(const QString &message)
 {
     QMessageBox::critical(nullptr,
@@ -53,6 +67,8 @@ bool is_already_running(const QString &instance_name = "default")
 
 int main(int argc, char **argv)
 {
+    qInstallMessageHandler(qdebug_force_console);
+
 #ifdef Q_OS_UNIX
     std::signal(SIGINT, sig_handler);
     std::signal(SIGTERM, sig_handler);
