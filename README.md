@@ -22,7 +22,6 @@ which uses the Qt Web Engine instead of Electron.
 
 ## TODO
 
- - Indicate network errors in the system tray icon just like the Electron app.
  - Probably show a counter in the notification tray icon, currently just a red circle.
  - Configure web app location.
 
