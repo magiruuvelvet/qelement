@@ -3,34 +3,70 @@
 #include <QStandardPaths>
 #include <QDir>
 
-namespace paths
-{
+std::unique_ptr<Paths> Paths::_defaultInstance;
 
-const QString &webengine_profile_path(const QString &profile, bool real)
+Paths::Paths(const QString &prefix)
 {
-    // first-time initialization
-    static QString empty;
-    static const auto base_location = QString("%1/%2").arg(
-        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation),
-#ifdef DEBUG_BUILD
-        "Profile-Debug-" + profile);
-#else
-        "Profile-" + profile);
-#endif
-    static auto init = ([&]{
-        QDir root = QDir(base_location);
-        return root.mkpath(".");
-    })();
-
-    if (real)
+    if (prefix.isEmpty())
     {
-        if (!init) return empty;
-        return base_location;
+        this->_baseLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     }
     else
     {
-        return base_location;
+        this->_baseLocation = prefix;
+    }
+
+    QDir root = QDir(this->_baseLocation);
+    this->_valid = root.mkpath(".");
+}
+
+Paths *Paths::defaultInstance()
+{
+    if (!_defaultInstance)
+    {
+        _defaultInstance = std::make_unique<Paths>();
+    }
+
+    return _defaultInstance.get();
+}
+
+const QString &Paths::baseLocation(bool real) const
+{
+    if (real)
+    {
+        return this->_valid ? this->_baseLocation : this->_empty;
+    }
+    else
+    {
+        return this->_baseLocation;
     }
 }
 
+const QString Paths::webEngineProfilePath(const QString &profile, bool real) const
+{
+    if (!this->_valid)
+    {
+        return {};
+    }
+
+    const QString _profile = profile.isEmpty() ? "-default" : "-" + profile;
+
+    const auto location = QString("%1/%2").arg(this->_baseLocation,
+#ifdef DEBUG_BUILD
+    "Profile-Debug" + _profile
+#else
+    "Profile" + _profile
+#endif
+    );
+
+    const bool success = QDir(location).mkpath(".");
+
+    if (real)
+    {
+        return success ? location : "";
+    }
+    else
+    {
+        return location;
+    }
 }

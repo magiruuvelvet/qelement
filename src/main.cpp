@@ -14,6 +14,7 @@
 
 constexpr const std::string_view appname{"QElement"};
 constexpr const std::string_view appversion{"1.1"};
+const Paths *paths = nullptr;
 
 std::unique_ptr<QLockFile> instance_lock;
 
@@ -163,11 +164,13 @@ int main(int argc, char **argv)
     a.setApplicationVersion(appversion.data());
     a.setWindowIcon(QIcon(":/element.ico"));
 
+    paths = Paths::defaultInstance();
+
     // create and validate data path
-    if (paths::webengine_profile_path(instance_name).isEmpty())
+    if (paths->webEngineProfilePath(instance_name).isEmpty())
     {
         show_error(QObject::tr("Unable to access directory: %1").arg(
-            paths::webengine_profile_path(instance_name, false)));
+            paths->webEngineProfilePath(instance_name, false)));
         return 1;
     }
 

@@ -6,6 +6,8 @@
 #include <QShowEvent>
 #include <QCloseEvent>
 
+extern const Paths *paths;
+
 BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
     : QWidget(parent)
 {
@@ -38,8 +40,9 @@ BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
 
     webview->setContextMenuPolicy(Qt::NoContextMenu);
 
-    profile->setCachePath(paths::webengine_profile_path());
-    profile->setPersistentStoragePath(QString("%1/%2").arg(paths::webengine_profile_path(profileName), "Storage"));
+    const auto path = paths->webEngineProfilePath(profileName);
+    profile->setCachePath(path);
+    profile->setPersistentStoragePath(QString("%1/%2").arg(path, "Storage"));
     profile->setPersistentCookiesPolicy(QWebEngineProfile::AllowPersistentCookies);
     profile->setNotificationPresenter([&](std::unique_ptr<QWebEngineNotification> notification){
         qDebug() << "notification received:" << notification->title() << notification->message();
