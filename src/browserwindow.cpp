@@ -1,12 +1,11 @@
 #include "browserwindow.hpp"
+#include "globals.hpp"
 #include "paths.hpp"
 #include "desktopnotification.hpp"
 
 #include <QShortcut>
 #include <QShowEvent>
 #include <QCloseEvent>
-
-extern const Paths *paths;
 
 BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
     : QWidget(parent)

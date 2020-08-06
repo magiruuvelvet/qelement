@@ -9,6 +9,8 @@ class ElementUrlScheme : public QWebEngineUrlSchemeHandler
 public:
     ElementUrlScheme(const QString &root, QObject *parent = nullptr);
 
+    void changeRoot(const QString &newRoot);
+
     static const QByteArray schemeName()
     {
         return "element";

@@ -11,6 +11,11 @@ ElementUrlScheme::ElementUrlScheme(const QString &root, QObject *parent)
 {
 }
 
+void ElementUrlScheme::changeRoot(const QString &newRoot)
+{
+    this->root = newRoot;
+}
+
 void ElementUrlScheme::requestStarted(QWebEngineUrlRequestJob *request)
 {
     // check if directory exists with every request in case it is moved or deleted

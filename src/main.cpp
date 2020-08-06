@@ -9,12 +9,14 @@
 #include <string_view>
 
 #include "paths.hpp"
+#include "configmanager.hpp"
 #include "browserwindow.hpp"
 #include "elementurlscheme.hpp"
 
 constexpr const std::string_view appname{"QElement"};
 constexpr const std::string_view appversion{"1.1"};
 const Paths *paths = nullptr;
+ConfigManager *config = nullptr;
 
 std::unique_ptr<QLockFile> instance_lock;
 
@@ -164,6 +166,7 @@ int main(int argc, char **argv)
     a.setApplicationVersion(appversion.data());
     a.setWindowIcon(QIcon(":/element.ico"));
 
+    // initialize application paths
     paths = Paths::defaultInstance();
 
     // create and validate data path
@@ -174,9 +177,21 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    // initialize config manager
+    auto configManager = std::make_unique<ConfigManager>(paths->webEngineProfilePath(instance_name));
+    config = configManager.get();
+
     // register element:// url scheme
-    auto elementUrlHandler = std::make_unique<ElementUrlScheme>("/opt/Element/resources/webapp");
+    auto elementUrlHandler = std::make_unique<ElementUrlScheme>(config->webroot());
     QWebEngineProfile::defaultProfile()->installUrlSchemeHandler(ElementUrlScheme::schemeName(), elementUrlHandler.get());
+
+    QObject::connect(config, &ConfigManager::configUpdated, [&](const ConfigManager::Key &key){
+        if (key == ConfigManager::Key::Webroot)
+        {
+            qDebug() << "webroot updated to:" << config->webroot();
+            elementUrlHandler->changeRoot(config->webroot());
+        }
+    });
 
     // load the browser window
     BrowserWindow webview(instance_name);
