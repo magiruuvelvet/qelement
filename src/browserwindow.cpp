@@ -48,6 +48,7 @@ BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
         this->_notification = notification.get();
 
         // only trigger notifications when application is not visible
+        // FIXME: disabled system tray icon issue
         if (!this->isVisible())
         {
             this->_hasNotification = true;
@@ -102,7 +103,7 @@ BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
     page->setUrl(QUrl("element://localhost/"));
 
     // create system tray icon with notification support
-    if (QSystemTrayIcon::isSystemTrayAvailable())
+    if (QSystemTrayIcon::isSystemTrayAvailable() && config->sysTrayIconEnabled())
     {
         this->trayIcon = std::make_unique<QSystemTrayIcon>();
         this->setNotificationIcon(NotificationIcon::Normal);

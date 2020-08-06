@@ -16,10 +16,14 @@ public:
     enum class Key
     {
         Webroot,
+        SysTrayIconEnabled,
     };
 
     void setWebroot(const QString &webroot);
     const QString webroot() const;
+
+    void setSysTrayIconEnabled(bool enabled);
+    bool sysTrayIconEnabled() const;
 
 signals:
     void configUpdated(const Key &key);

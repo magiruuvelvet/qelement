@@ -9,7 +9,8 @@ struct KeyValuePair
 };
 
 static const std::unordered_map<ConfigManager::Key, KeyValuePair> definitions = {
-    {ConfigManager::Key::Webroot, {"element/webroot", QString("/opt/Element/resources/webapp")}},
+    {ConfigManager::Key::Webroot,            {"element/webroot",        QString("/opt/Element/resources/webapp")}},
+    {ConfigManager::Key::SysTrayIconEnabled, {"app/sysTrayIconEnabled", bool(true)}},
 };
 
 static inline const decltype(KeyValuePair::key) keyName(const ConfigManager::Key &key)
@@ -29,6 +30,7 @@ ConfigManager::ConfigManager(const QString &baseLocation, QObject *parent)
 
     // initialize defaults
     this->initialize_key(Key::Webroot);
+    this->initialize_key(Key::SysTrayIconEnabled);
 }
 
 void ConfigManager::initialize_key(const Key &key)
@@ -53,4 +55,15 @@ void ConfigManager::setWebroot(const QString &webroot)
 const QString ConfigManager::webroot() const
 {
     return this->settings->value(keyName(Key::Webroot), value(Key::Webroot)).toString();
+}
+
+void ConfigManager::setSysTrayIconEnabled(bool enabled)
+{
+    this->settings->setValue(keyName(Key::SysTrayIconEnabled), enabled);
+    emit configUpdated(Key::SysTrayIconEnabled);
+}
+
+bool ConfigManager::sysTrayIconEnabled() const
+{
+    return this->settings->value(keyName(Key::SysTrayIconEnabled), value(Key::SysTrayIconEnabled)).toBool();
 }
