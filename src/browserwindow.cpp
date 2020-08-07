@@ -48,8 +48,7 @@ BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
         this->_notification = notification.get();
 
         // only trigger notifications when application is not visible
-        // FIXME: disabled system tray icon issue
-        if (!this->isVisible())
+        if (!this->isVisible() || !this->hasFocus() || this->isMinimized())
         {
             this->_hasNotification = true;
 
@@ -269,6 +268,25 @@ void BrowserWindow::closeEvent(QCloseEvent *event)
         // exit the application when no tray icon is present
         event->accept();
     }
+}
+
+bool BrowserWindow::event(QEvent *event)
+{
+    if (event->type() == QEvent::WindowActivate)
+    {
+        this->_hasNotification = false;
+
+        if (this->trayIcon)
+        {
+            // remove notification indicator from tray icon
+            if (this->_notificationIcon != NotificationIcon::NetworkError)
+            {
+                this->setNotificationIcon(NotificationIcon::Normal);
+            }
+        }
+    }
+
+    return QWidget::event(event);
 }
 
 void BrowserWindow::trayTriggerCallback(QSystemTrayIcon::ActivationReason reason)

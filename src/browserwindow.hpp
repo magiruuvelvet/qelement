@@ -39,6 +39,7 @@ private:
 protected:
     void showEvent(QShowEvent *event);
     void closeEvent(QCloseEvent *event);
+    bool event(QEvent *event);
 
 private:
     std::unique_ptr<QHBoxLayout> _layout;
