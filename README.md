@@ -23,7 +23,6 @@ which uses the Qt Web Engine instead of Electron.
 ## TODO
 
  - Probably show a counter in the notification tray icon, currently just a red circle.
- - Configure web app location.
 
 ## Building
 
@@ -35,6 +34,17 @@ cmake --build .
 
 ## How to use?
 
-QElement requires the built web app found at the [riot-web](https://github.com/vector-im/riot-web/releases) repository.
-Currently the location is hardcoded to `/opt/Element/resources/webapp`. The extracted Electron `webapp.asar` works too.
-Make sure a `config.json` file is available in the web app root.
+QElement requires the built web app found at the [element-web](https://github.com/vector-im/element-web/releases) repository;
+the extracted Electron `webapp.asar` works too. Make sure a `config.json` file is available in the web app root.
+By default QElement will look for the web app in `/opt/Element/resources/webapp`, but the location can be customized
+in the config file found at `~/.local/share/QElement/<profile>/preferences.ini`.
+
+**Default Configuration**
+
+```ini
+[app]
+sysTrayIconEnabled=true
+
+[element]
+webroot=/opt/Element/resources/webapp
+```
