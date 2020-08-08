@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QTranslator>
 #include <QCommandLineParser>
 #include <QtWebEngine>
 #include <QtConcurrentRun>
@@ -165,6 +166,18 @@ int main(int argc, char **argv)
     a.setApplicationName(appname.data());
     a.setApplicationVersion(appversion.data());
     a.setWindowIcon(QIcon(":/element.ico"));
+
+    // load embedded translations for current locale using QRC language and alias magic :)
+    // falls back to embedded English strings if no translation was found
+    auto translator = std::make_unique<QTranslator>();
+    if (translator->load(QLocale(), ":/i18n/lang.qm"))
+    {
+        a.installTranslator(translator.get());
+    }
+    else
+    {
+        translator.reset();
+    }
 
     // initialize application paths
     paths = Paths::defaultInstance();

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+exec lupdate -no-obsolete \
+    src/**.cpp \
+    src/**.hpp \
+    -ts i18n/$1.ts
