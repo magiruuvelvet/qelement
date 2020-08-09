@@ -120,5 +120,6 @@ endif()
 
 install(TARGETS ${CURRENT_TARGET} RUNTIME DESTINATION bin)
 install(FILES "${PROJECT_SOURCE_DIR}/assets/qelement.desktop" DESTINATION share/applications)
+install(FILES "${PROJECT_SOURCE_DIR}/assets/element.png" DESTINATION share/icons/hicolor/256x256/apps RENAME qelement.png)
 
 message(STATUS "Configured ${CURRENT_TARGET}.")
