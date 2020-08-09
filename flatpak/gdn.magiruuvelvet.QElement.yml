@@ -63,6 +63,7 @@ finish-args:
   - --talk-name=org.freedesktop.portal.Desktop
   - --talk-name=org.freedesktop.portal.Fcitx
   - --talk-name=com.canonical.AppMenu.Registrar
+  - --talk-name=org.kde.StatusNotifierWatcher
 cleanup:
   - '/include'
   - '/lib/debug'
