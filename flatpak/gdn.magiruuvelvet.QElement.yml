@@ -1,0 +1,79 @@
+app-id: gdn.magiruuvelvet.QElement
+base: io.qt.qtwebengine.BaseApp
+base-version: '5.14'
+runtime: org.kde.Platform
+runtime-version: '5.14'
+sdk: org.kde.Sdk
+command: qelement
+rename-desktop-file: qelement.desktop
+modules:
+  - name: libnotify
+    buildsystem: meson
+    builddir: true
+    config-opts:
+      - -Dintrospection=disabled
+      - -Dtests=false
+      - -Dgtk_doc=false
+      - -Ddocbook_docs=disabled
+      - -Dman=false
+    sources:
+      - type: archive
+        url: https://gitlab.gnome.org/GNOME/libnotify/-/archive/0.7.9/libnotify-0.7.9.tar.gz
+        sha256: 9bd4f5fa911d27567e7cc2d2d09d69356c16703c4e8d22c0b49a5c45651f3af0
+  - name: qelement
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_C_COMPILER=clang
+      - -DCMAKE_CXX_COMPILER=clang++
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DENABLE_LIBNOTIFY=ON
+      - -DBUILD_TRANSLATIONS=ON
+    sources:
+      - type: git
+        url: https://github.com/magiruuvelvet/qelement.git
+  - name: element-web
+    buildsystem: simple
+    build-commands:
+      - mv config.sample.json config.json
+      - install -d /app/opt/Element/resources/webapp
+      - cp -rp . /app/opt/Element/resources/webapp/
+    sources:
+      - type: archive
+        url: https://github.com/vector-im/element-web/releases/download/v1.7.3/riot-v1.7.3.tar.gz
+        sha256: 1a65c0550454c923d69bba93722487bcfd01a67233d2de2648ef5a1a6742906e
+  - name: launcher
+    buildsystem: simple
+    build-commands:
+      - mv /app/bin/qelement /app/lib/libexec/qelement
+      - install -D qelement.sh /app/bin/qelement
+      - ln -s /app/bin/QtWebEngineProcess /app/lib/libexec/QtWebEngineProcess
+    sources:
+      - type: file
+        path: qelement.sh
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --share=network
+  - --socket=pulseaudio
+  - --device=dri
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.portal.Desktop
+  - --talk-name=org.freedesktop.portal.Fcitx
+  - --talk-name=com.canonical.AppMenu.Registrar
+cleanup:
+  - '/include'
+  - '/lib/debug'
+  - '/lib/mkspecs'
+  - '/lib/pkgconfig'
+  - '/lib/plugins/designer'
+  - '/lib/*.a'
+  - '/lib/x86_64-linux-gnu/cmake'
+  - '/lib/x86_64-linux-gnu/pkgconfig'
+  - '/lib/x86_64-linux-gnu/*.la'
+  - '/lib/x86_64-linux-gnu/*.prl'
+  - '/bin/notify-send'
+  - '/share/man'
+cleanup-commands:
+  - '/app/cleanup-BaseApp.sh'

@@ -1,0 +1,2 @@
+#!/bin/sh
+exec flatpak-builder out gdn.magiruuvelvet.QElement.yml --force-clean
