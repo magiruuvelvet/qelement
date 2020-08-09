@@ -30,6 +30,8 @@ modules:
       - -DCMAKE_BUILD_TYPE=Release
       - -DENABLE_LIBNOTIFY=ON
       - -DBUILD_TRANSLATIONS=ON
+    post-install:
+      - install -D ../flatpak/*.appdata.xml /app/share/appdata/gdn.magiruuvelvet.QElement.appdata.xml
     sources:
       - type: git
         url: https://github.com/magiruuvelvet/qelement.git
