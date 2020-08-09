@@ -93,13 +93,14 @@ int main(int argc, char **argv)
     QList<QCommandLineOption> options{
         QCommandLineOption("help", QObject::tr("Show this help")),
         QCommandLineOption("minimized", QObject::tr("Start minimized to tray")),
-        QCommandLineOption("profile", "Profile to use", "profile",
+        QCommandLineOption("profile", QObject::tr("Profile to use"), "profile",
             #ifdef DEBUG_BUILD
                 "debug"
             #else
                 "default"
             #endif
             ),
+        QCommandLineOption("webapp-root", QObject::tr("Use alternative webapp root"), "webapp-root"),
     };
     parser.addOptions(options);
     parser.process(arguments);
@@ -194,8 +195,17 @@ int main(int argc, char **argv)
     auto configManager = std::make_unique<ConfigManager>(paths->webEngineProfilePath(instance_name));
     config = configManager.get();
 
+    // check if an alternative webroot was requested
+    auto webappRoot = config->webroot();
+    const auto alternativeWebroot = parser.value("webapp-root");
+    if (!alternativeWebroot.isEmpty())
+    {
+        qDebug() << "using alternative webroot:" << alternativeWebroot;
+        webappRoot = alternativeWebroot;
+    }
+
     // register element:// url scheme
-    auto elementUrlHandler = std::make_unique<ElementUrlScheme>(config->webroot());
+    auto elementUrlHandler = std::make_unique<ElementUrlScheme>(webappRoot);
     QWebEngineProfile::defaultProfile()->installUrlSchemeHandler(ElementUrlScheme::schemeName(), elementUrlHandler.get());
 
     QObject::connect(config, &ConfigManager::configUpdated, [&](const ConfigManager::Key &key){
