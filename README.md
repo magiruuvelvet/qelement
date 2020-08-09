@@ -48,3 +48,12 @@ sysTrayIconEnabled=true
 [element]
 webroot=/opt/Element/resources/webapp
 ```
+
+## Installing
+
+For binary releases I only support flatpak on Linux. My applications are hosted on my own flatpak repository.
+
+```
+flatpak remote-add --if-not-exists magiruuvelvet https://flatpak.magiruuvelvet.gdn/magiruuvelvet.flatpakrepo
+flatpak install gdn.magiruuvelvet.QElement
+```
