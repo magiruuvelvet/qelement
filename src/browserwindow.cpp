@@ -330,6 +330,7 @@ void BrowserWindow::initializeScripts()
 {
     auto scripts = profile->scripts();
 
+    // script to get the homeserver url for network monitor
     QWebEngineScript homeserverUrlGetter;
     homeserverUrlGetter.setName("homeserver-url-getter");
     homeserverUrlGetter.setWorldId(QWebEngineScript::MainWorld);
@@ -354,6 +355,26 @@ void BrowserWindow::initializeScripts()
         setTimeout(notification_fixer, 4000);
     )");
 
+    // manipulate the device name function to return a proper name instead of a ugly url
+    QWebEngineScript deviceName;
+    deviceName.setName("device-name");
+    deviceName.setWorldId(QWebEngineScript::MainWorld);
+    deviceName.setInjectionPoint(QWebEngineScript::Deferred);
+    deviceName.setSourceCode(QString(R"(
+        console.info("setting custom device name...");
+        let device_name = () => {
+            try {
+                mxPlatformPeg.platform.getDefaultDeviceDisplayName = function() {
+                    return "%1 %2";
+                };
+            } catch (e) {}
+        };
+        device_name();
+        setTimeout(device_name, 1000);
+        setTimeout(device_name, 2000);
+        setTimeout(device_name, 3000);
+        setTimeout(device_name, 4000);
+    )").arg(qApp->applicationDisplayName(), qApp->applicationVersion()));
 
     if (!scripts->contains(homeserverUrlGetter))
     {
@@ -365,6 +386,12 @@ void BrowserWindow::initializeScripts()
     {
         qDebug() << "install notification fixer script...";
         scripts->insert(notificationFixer);
+    }
+
+    if (!scripts->contains(deviceName))
+    {
+        qDebug() << "install device name script...";
+        scripts->insert(deviceName);
     }
 }
 
