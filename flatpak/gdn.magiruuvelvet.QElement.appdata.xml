@@ -1,11 +1,21 @@
+<!-- appstream is a pile of poo requiring all kinds of nonsense -->
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
     <id>gdn.magiruuvelvet.QElement</id>
     <name>QElement</name>
     <developer_name>マギルゥーベルベット</developer_name>
-    <project_license></project_license>
-    <metadata_license></metadata_license>
+    <project_license>LicenseRef-proprietary</project_license>
+    <metadata_license>MIT</metadata_license>
     <summary>QElement is an alternative desktop app implementation for Element</summary>
     <url type="homepage">https://github.com/magiruuvelvet/qelement</url>
-    <description>QElement is an alternative desktop app implementation for Element</description>
+    <description><p>QElement is an alternative desktop app implementation for Element</p></description>
+    <releases>
+        <release date="2020-08-01" version="master" />
+    </releases>
+    <screenshots>
+        <screenshot type="default">
+            <image>http://example.com/thevoid.png</image>
+        </screenshot>
+    </screenshots>
+    <content_rating type="oars-1.0" />
 </component>
