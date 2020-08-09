@@ -3,6 +3,7 @@
 #include "paths.hpp"
 #include "desktopnotification.hpp"
 
+#include <QSysInfo>
 #include <QShortcut>
 #include <QShowEvent>
 #include <QCloseEvent>
@@ -360,12 +361,12 @@ void BrowserWindow::initializeScripts()
     deviceName.setName("device-name");
     deviceName.setWorldId(QWebEngineScript::MainWorld);
     deviceName.setInjectionPoint(QWebEngineScript::Deferred);
-    deviceName.setSourceCode(QString(R"(
+    deviceName.setSourceCode(QString(R"###(
         console.info("setting custom device name...");
         let device_name = () => {
             try {
                 mxPlatformPeg.platform.getDefaultDeviceDisplayName = function() {
-                    return "%1 %2";
+                    return "%1 (%2)";
                 };
             } catch (e) {}
         };
@@ -374,7 +375,7 @@ void BrowserWindow::initializeScripts()
         setTimeout(device_name, 2000);
         setTimeout(device_name, 3000);
         setTimeout(device_name, 4000);
-    )").arg(qApp->applicationDisplayName(), qApp->applicationVersion()));
+    )###").arg(qApp->applicationDisplayName(), QSysInfo::prettyProductName()));
 
     if (!scripts->contains(homeserverUrlGetter))
     {
