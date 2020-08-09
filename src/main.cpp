@@ -15,7 +15,7 @@
 #include "elementurlscheme.hpp"
 
 constexpr const std::string_view appname{"QElement"};
-constexpr const std::string_view appversion{"1.1"};
+constexpr const std::string_view appversion{"1.2"};
 const Paths *paths = nullptr;
 ConfigManager *config = nullptr;
 
