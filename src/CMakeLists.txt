@@ -86,7 +86,7 @@ else()
 endif()
 
 # create target after qt setup
-CreateTarget(${CURRENT_TARGET} EXECUTABLE ${CURRENT_TARGET_NAME} 20)
+CreateTarget(${CURRENT_TARGET} EXECUTABLE ${CURRENT_TARGET_NAME} C++ 20)
 
 # append assets to target sources
 add_dependencies(${CURRENT_TARGET} GenerateEmbeddedAssets GenerateEmbeddedTranslations)
