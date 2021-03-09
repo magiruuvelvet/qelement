@@ -2,8 +2,6 @@ set(CURRENT_TARGET "application")
 set(CURRENT_TARGET_NAME "qelement")
 set(CURRENT_TARGET_INTERFACE "${CURRENT_TARGET}_interface")
 
-message(STATUS "Configuring ${CURRENT_TARGET}...")
-
 find_package(Threads REQUIRED)
 
 set(ENABLE_LIBNOTIFY OFF CACHE BOOL "Use libnotify for notifications instead of Qt.")
@@ -121,5 +119,3 @@ endif()
 install(TARGETS ${CURRENT_TARGET} RUNTIME DESTINATION bin)
 install(FILES "${PROJECT_SOURCE_DIR}/assets/qelement.desktop" DESTINATION share/applications)
 install(FILES "${PROJECT_SOURCE_DIR}/assets/element.png" DESTINATION share/icons/hicolor/256x256/apps RENAME qelement.png)
-
-message(STATUS "Configured ${CURRENT_TARGET}.")
