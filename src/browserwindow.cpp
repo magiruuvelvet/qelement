@@ -142,6 +142,37 @@ BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
     this->networkMonitorTimer->setInterval(interval);
     this->networkMonitorTimer->start();
 
+    // setup downloader
+    connect(profile, &QWebEngineProfile::downloadRequested, this, [&](QWebEngineDownloadItem *download) {
+        const auto filename = QFileDialog::getSaveFileName(this, tr("Download"), QDir::homePath());
+
+        if (filename.isEmpty())
+        {
+            download->cancel();
+            return;
+        }
+
+        const auto fileinfo = QFileInfo(filename);
+
+        download->setDownloadDirectory(fileinfo.path());
+        download->setDownloadFileName(fileinfo.fileName());
+
+        connect(download, &QWebEngineDownloadItem::finished, this, [&]{
+            // send notification using libnotify when enabled
+#ifdef LIBNOTIFY_ENABLED
+            DesktopNotification::send(
+                qApp->applicationDisplayName(),
+                tr("Download finished"),
+                qApp->windowIcon().pixmap(128, 128).toImage());
+#endif
+        });
+
+        // connect(download, &QWebEngineDownloadItem::downloadProgress, this, [&](qint64 bytesReceived, qint64 bytesTotal) {
+        // });
+
+        download->accept();
+    });
+
     // setup shortcuts
     connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this),
             &QShortcut::activated, this, []{
