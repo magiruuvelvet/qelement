@@ -12,6 +12,7 @@
 #ifdef LIBNOTIFY_ENABLED
 #include <libnotify/notify.h>
 #include <libnotify/notification.h>
+#include <glib/gvariant.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #endif
 
@@ -35,6 +36,8 @@ DesktopNotification::DesktopNotification()
 #ifdef LIBNOTIFY_ENABLED
     d_libnotify_init(qApp->applicationDisplayName());
     this->d_ptr = notify_notification_new("", "", nullptr);
+    notify_notification_set_hint((NotifyNotification*)this->d_ptr,
+        "desktop-entry", g_variant_new_string("qelement"));
 #endif
 }
 
