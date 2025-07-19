@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QtWebEngine>
+#include <QtWebEngineCore>
 #include <QtWebEngineWidgets>
 
 #include "webenginepage.hpp"
@@ -12,7 +12,7 @@ class WebEngineView : public QWebEngineView
     Q_OBJECT
 
 public:
-    explicit WebEngineView(QWidget *parent = nullptr);
+    explicit WebEngineView(QWebEngineProfile *profile, QWidget *parent = nullptr);
 
     void setPage(WebEnginePage *page);
     WebEnginePage *page() const;
@@ -22,4 +22,5 @@ protected:
 
 private:
     std::unique_ptr<WebEnginePage> _page;
+    QWebEngineProfile *profile;
 };

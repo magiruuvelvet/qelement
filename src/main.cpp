@@ -1,7 +1,7 @@
 #include <QApplication>
 #include <QTranslator>
 #include <QCommandLineParser>
-#include <QtWebEngine>
+#include <QtWebEngineCore>
 #include <QtConcurrentRun>
 #include <QMessageBox>
 #include <QLockFile>
@@ -162,7 +162,6 @@ int main(int argc, char **argv)
     QWebEngineUrlScheme::registerScheme(scheme);
 
     // initialize application with modified arguments
-    QtWebEngine::initialize();
     QApplication a(newArgc, args.data());
     a.setApplicationName(appname.data());
     a.setApplicationVersion(appversion.data());
@@ -206,7 +205,9 @@ int main(int argc, char **argv)
 
     // register element:// url scheme
     auto elementUrlHandler = std::make_unique<ElementUrlScheme>(webappRoot);
-    QWebEngineProfile::defaultProfile()->installUrlSchemeHandler(ElementUrlScheme::schemeName(), elementUrlHandler.get());
+    QWebEngineProfile web_engine_profile(instance_name, &a);
+    web_engine_profile.setPersistentStoragePath(paths->webEngineProfilePath(instance_name));
+    web_engine_profile.installUrlSchemeHandler(ElementUrlScheme::schemeName(), elementUrlHandler.get());
 
     QObject::connect(config, &ConfigManager::configUpdated, [&](const ConfigManager::Key &key){
         if (key == ConfigManager::Key::Webroot)
@@ -217,7 +218,7 @@ int main(int argc, char **argv)
     });
 
     // load the browser window
-    BrowserWindow webview(instance_name);
+    BrowserWindow webview(instance_name, &web_engine_profile);
 
     // show browser window
     if (!parser.isSet("minimized"))

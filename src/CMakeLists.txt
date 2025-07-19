@@ -14,16 +14,16 @@ else()
 endif()
 
 # Qt
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Network REQUIRED)
-find_package(Qt5Concurrent REQUIRED)
-find_package(Qt5WebEngine REQUIRED)
-find_package(Qt5WebEngineWidgets REQUIRED)
-find_package(Qt5LinguistTools)
+find_package(Qt6Core REQUIRED)
+find_package(Qt6Gui REQUIRED)
+find_package(Qt6Widgets REQUIRED)
+find_package(Qt6Network REQUIRED)
+find_package(Qt6Concurrent REQUIRED)
+find_package(Qt6WebEngineCore REQUIRED)
+find_package(Qt6WebEngineWidgets REQUIRED)
+find_package(Qt6LinguistTools)
 
-set(CONFIG_STATUS_QT "${Qt5Core_VERSION} (system)" CACHE INTERNAL "")
+set(CONFIG_STATUS_QT "${Qt6Core_VERSION} (system)" CACHE INTERNAL "")
 
 # Qt automoc
 message(STATUS "Enabling Qt automoc...")
@@ -31,16 +31,16 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
 # embedded assets
-qt5_add_resources(RCC_SOURCES "${PROJECT_SOURCE_DIR}/assets/assets.qrc")
+qt6_add_resources(RCC_SOURCES "${PROJECT_SOURCE_DIR}/assets/assets.qrc")
 add_custom_target(GenerateEmbeddedAssets DEPENDS ${RCC_SOURCES})
 
 # ui translations
 set(BUILD_TRANSLATIONS OFF CACHE BOOL "Build translations")
-if (BUILD_TRANSLATIONS AND Qt5LinguistTools_FOUND)
+if (BUILD_TRANSLATIONS AND Qt6LinguistTools_FOUND)
     message(STATUS "Building of translations activated.")
 
     # qt lrelease binary
-    get_target_property(qt5_lrelease_bin Qt5::lrelease IMPORTED_LOCATION)
+    get_target_property(qt6_lrelease_bin Qt6::lrelease IMPORTED_LOCATION)
 
     # scan available translation
     file(GLOB_RECURSE UI_TRANSLATION_FILES
@@ -49,7 +49,7 @@ if (BUILD_TRANSLATIONS AND Qt5LinguistTools_FOUND)
 
     # print some interesting variables
     message(STATUS "Compiled translations will be placed in: ${CMAKE_CURRENT_BINARY_DIR}/i18n")
-    message(STATUS "lrelease location: ${qt5_lrelease_bin}")
+    message(STATUS "lrelease location: ${qt6_lrelease_bin}")
 
     # copy qrc file
     configure_file("${PROJECT_SOURCE_DIR}/i18n/translations.qrc" "${CMAKE_CURRENT_BINARY_DIR}/i18n/translations.qrc" COPYONLY)
@@ -61,12 +61,12 @@ if (BUILD_TRANSLATIONS AND Qt5LinguistTools_FOUND)
         get_filename_component(QM_OUTPUT_FILE "${TS_FILE}" NAME_WE)
         message(STATUS "Compiling translation ${QM_OUTPUT_FILE}...")
         execute_process(
-            COMMAND "${qt5_lrelease_bin}" "${TS_FILE}" -silent -qm "${CMAKE_CURRENT_BINARY_DIR}/i18n/${QM_OUTPUT_FILE}.qm"
+            COMMAND "${qt6_lrelease_bin}" "${TS_FILE}" -silent -qm "${CMAKE_CURRENT_BINARY_DIR}/i18n/${QM_OUTPUT_FILE}.qm"
             WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/i18n"
         )
     endforeach()
 
-    qt5_add_resources(RCC_TRANSLATION_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/i18n/translations.qrc")
+    qt6_add_resources(RCC_TRANSLATION_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/i18n/translations.qrc")
     add_custom_target(GenerateEmbeddedTranslations DEPENDS ${RCC_TRANSLATION_SOURCES})
 
     set(CONFIG_STATUS_TRANSLATIONS "enabled" CACHE INTERNAL "")
@@ -99,13 +99,13 @@ target_compile_definitions(${CURRENT_TARGET} PRIVATE -DQT_NO_FOREACH)
 
 target_link_libraries(${CURRENT_TARGET}
     PRIVATE
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
-        Qt5::Network
-        Qt5::Concurrent
-        Qt5::WebEngine
-        Qt5::WebEngineWidgets
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
+        Qt6::Network
+        Qt6::Concurrent
+        Qt6::WebEngineCore
+        Qt6::WebEngineWidgets
         Threads::Threads
 )
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QtWebEngine>
+#include <QtWebEngineCore>
 #include <QtWebEngineWidgets>
 
 class WebEnginePage : public QWebEnginePage
@@ -8,7 +8,7 @@ class WebEnginePage : public QWebEnginePage
     Q_OBJECT
 
 public:
-    explicit WebEnginePage(QObject *parent = nullptr);
+    explicit WebEnginePage(QWebEngineProfile *profile, QObject *parent = nullptr);
 
 protected:
     bool acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool);
@@ -18,4 +18,6 @@ protected:
 
 private:
     void openExternalUrl(const QUrl &url);
+
+    QWebEngineProfile *profile;
 };

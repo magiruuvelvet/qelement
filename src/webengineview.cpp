@@ -2,10 +2,11 @@
 
 #include <QDesktopServices>
 
-WebEngineView::WebEngineView(QWidget *parent)
+WebEngineView::WebEngineView(QWebEngineProfile *profile, QWidget *parent)
     : QWebEngineView(parent)
 {
-    this->_page = std::make_unique<WebEnginePage>(this);
+    this->profile = profile;
+    this->_page = std::make_unique<WebEnginePage>(profile, this);
     this->setPage(this->_page.get());
 }
 

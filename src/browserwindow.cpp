@@ -7,10 +7,12 @@
 #include <QShortcut>
 #include <QShowEvent>
 #include <QCloseEvent>
+#include <QVariant>
 
-BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
+BrowserWindow::BrowserWindow(const QString &profileName, QWebEngineProfile *profile, QWidget *parent)
     : QWidget(parent)
 {
+    this->profile = profile;
     this->setMinimumSize(250, 250);
 
     // retain size when hidden
@@ -25,7 +27,7 @@ BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
     this->setLayout(this->_layout.get());
 
     // setup web view
-    this->_webview = std::make_unique<WebEngineView>();
+    this->_webview = std::make_unique<WebEngineView>(profile);
     this->_layout->addWidget(this->_webview.get());
 
     // retain webview size when hidden to avoid rendering bugs when shown again by clicking on the tray icon
@@ -36,15 +38,14 @@ BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
     webview = this->_webview.get();
     page = webview->page();
     settings = webview->settings();
-    profile = page->profile();
 
     webview->setContextMenuPolicy(Qt::NoContextMenu);
 
     const auto path = paths->webEngineProfilePath(profileName);
-    profile->setCachePath(path);
-    profile->setPersistentStoragePath(QString("%1/%2").arg(path, "Storage"));
-    profile->setPersistentCookiesPolicy(QWebEngineProfile::AllowPersistentCookies);
-    profile->setNotificationPresenter([&](std::unique_ptr<QWebEngineNotification> notification){
+    this->profile->setCachePath(path);
+    this->profile->setPersistentStoragePath(QString("%1/%2").arg(path, "Storage"));
+    this->profile->setPersistentCookiesPolicy(QWebEngineProfile::AllowPersistentCookies);
+    this->profile->setNotificationPresenter([&](std::unique_ptr<QWebEngineNotification> notification){
         qDebug() << "notification received:" << notification->title() << notification->message();
         this->_notification = notification.get();
 
@@ -81,9 +82,9 @@ BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
     this->initializeScripts();
 
     // add application to user agent
-    auto useragent = profile->httpUserAgent();
+    auto useragent = this->profile->httpUserAgent();
     useragent.append(QString(" %1/%2").arg(qApp->applicationName(), qApp->applicationVersion()));
-    profile->setHttpUserAgent(useragent);
+    this->profile->setHttpUserAgent(useragent);
 
     settings->setAttribute(QWebEngineSettings::PluginsEnabled, true);
     settings->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
@@ -143,7 +144,7 @@ BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
     this->networkMonitorTimer->start();
 
     // setup downloader
-    connect(profile, &QWebEngineProfile::downloadRequested, this, [&](QWebEngineDownloadItem *download) {
+    connect(this->profile, &QWebEngineProfile::downloadRequested, this, [&](QWebEngineDownloadRequest *download) {
         const auto filename = QFileDialog::getSaveFileName(this, tr("Download"), QDir::homePath());
 
         if (filename.isEmpty())
@@ -157,7 +158,7 @@ BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
         download->setDownloadDirectory(fileinfo.path());
         download->setDownloadFileName(fileinfo.fileName());
 
-        connect(download, &QWebEngineDownloadItem::finished, this, [&]{
+        connect(download, &QWebEngineDownloadRequest::isFinishedChanged, this, [&]{
             // send notification using libnotify when enabled
 #ifdef LIBNOTIFY_ENABLED
             DesktopNotification::send(
@@ -167,22 +168,22 @@ BrowserWindow::BrowserWindow(const QString &profileName, QWidget *parent)
 #endif
         });
 
-        // connect(download, &QWebEngineDownloadItem::downloadProgress, this, [&](qint64 bytesReceived, qint64 bytesTotal) {
+        // connect(download, &QWebEngineDownloadRequest::downloadProgress, this, [&](qint64 bytesReceived, qint64 bytesTotal) {
         // });
 
         download->accept();
     });
 
     // setup shortcuts
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this),
+    connect(new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q), this),
             &QShortcut::activated, this, []{
                 qApp->quit();
             });
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this),
+    connect(new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_R), this),
             &QShortcut::activated, this, [&]{
                 webview->triggerPageAction(QWebEnginePage::ReloadAndBypassCache);
             });
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I), this),
+    connect(new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_I), this),
             &QShortcut::activated, this, [&]{
                 //page->setInspectedPage(page);
             });
@@ -433,7 +434,7 @@ void BrowserWindow::setupNetworkMonitor(bool ok)
     {
         QTimer::singleShot(10000, this, [&]{
             page->runJavaScript("window.mx_hs_url;", [&](const QVariant &result) {
-                if (result.canConvert(QVariant::String))
+                if (result.canConvert<QString>())
                 {
                     this->homeserver = result.toString();
                     qDebug() << "homeserver url:" << this->homeserver;

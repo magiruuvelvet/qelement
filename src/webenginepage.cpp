@@ -2,9 +2,10 @@
 
 #include <QDesktopServices>
 
-WebEnginePage::WebEnginePage(QObject *parent)
-    : QWebEnginePage(parent)
+WebEnginePage::WebEnginePage(QWebEngineProfile *profile, QObject *parent)
+    : QWebEnginePage(profile, parent)
 {
+    this->profile = profile;
 }
 
 bool WebEnginePage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool)
@@ -31,7 +32,7 @@ bool WebEnginePage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::Nav
 WebEnginePage *WebEnginePage::createWindow(WebWindowType type)
 {
     // open url in system web browser if target is outside of the application
-    auto self = new WebEnginePage();
+    auto self = new WebEnginePage(this->profile);
     connect(self, &QWebEnginePage::urlChanged, self, &WebEnginePage::openExternalUrl);
     return self;
 }

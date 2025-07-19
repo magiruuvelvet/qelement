@@ -2,7 +2,7 @@
 
 #include <QWidget>
 #include <QBoxLayout>
-#include <QtWebEngine>
+#include <QtWebEngineCore>
 #include <QtWebEngineWidgets>
 #include <QSystemTrayIcon>
 #include <QNetworkAccessManager>
@@ -16,7 +16,7 @@ class BrowserWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit BrowserWindow(const QString &profileName, QWidget *parent = nullptr);
+    explicit BrowserWindow(const QString &profileName, QWebEngineProfile *profile, QWidget *parent = nullptr);
     ~BrowserWindow();
 
     enum class NotificationIcon
